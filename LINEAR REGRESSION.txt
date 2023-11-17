@@ -1,0 +1,214 @@
+SINGLE LINEAR REGRESSION MANUAL INPUT
+
+
+
+import matplotlib.pyplot as plt                                                                                                                                                                                    
+from sklearn.linear_model import LinearRegression                                                                                                                                                                  
+import numpy as np                                                                                                                                                                                                 
+
+# Data                                                                                                                                                                                                             
+Id = [0.734, 0.886, 1.04, 1.19, 1.35, 1.50, 1.66, 1.81, 1.97, 2.12]                                                                                                                                                
+Vgs = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]                                                                                                                                                           
+
+# Convert lists to numpy arrays and reshape them                                                                                                                                                                   
+Id = np.array(Id).reshape(-1, 1)                                                                                                                                                                                   
+Vgs = np.array(Vgs).reshape(-1, 1)                                                                                                                                                                                 
+
+# Create a scatter plot                                                                                                                                                                                            
+plt.scatter(Vgs, Id)                                                                                                                                                                                               
+
+# Add labels and title                                                                                                                                                                                             
+plt.xlabel("Gate-to-Source Voltage (Vgs)")                                                                                                                                                                         
+plt.ylabel("Drain Current (Id, mA)")                                                                                                                                                                               
+plt.title("Scatter Plot of Drain Current vs. Gate-to-Source Voltage")                                                                                                                                              
+
+# Fit the linear regression model                                                                                                                                                                                  
+regression = LinearRegression()                                                                                                                                                                                    
+regression.fit(Vgs, Id)                                                                                                                                                                                            
+
+# Predict values using the regression model                                                                                                                                                                        
+predicted_Id = regression.predict(Vgs)                                                                                                                                                                             
+# Plot the regression line                                                                                                                                                                                         
+plt.plot(Vgs, predicted_Id, color='red', label='Regression Line')                                                                                                                                                  
+
+# Show the plot                                                                                                                                                                                                    
+plt.legend()                                                                                                                                                                                                       
+plt.show()                                                                                                                                                                                                         
+
+# Get the parameters of the model                                                                                                                                                                                  
+intercept = regression.intercept_[0]                                                                                                                                                                               
+slope = regression.coef_[0][0]                                                                                                                                                                                     
+
+
+print(f"Intercept (β₀): {intercept}")                                                                                                                                                                              
+print(f"Slope (β₁): {slope}")                                                                                                                                                                                      
+
+# Report the equation of the least-squares regression line                                                                                                                                                         
+print(f"Equation of the least-squares regression line: Id = {intercept:.4f} + {slope:.4f} * Vgs")     
+
+
+
+
+
+
+
+
+
+SINGLE LINEAR REGRESSION FROM DATASET
+
+
+
+
+
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+
+# Load CSV and columns
+df = pd.read_csv("CHD1.csv")
+
+# Extract the independent variable (age) and dependent variable (coronary_heart_disease)
+X = df['age'].values.reshape(-1, 1)
+Y = df['coronary_heart_disease'].values.reshape(-1, 1)
+
+# Create a linear regression model
+regression = LinearRegression()
+
+# Fit the model to the data
+regression.fit(X, Y)
+
+# Predict the values using the model
+predicted_Y = regression.predict(X)
+
+# Calculate the coefficient of determination (R²)
+r2 = r2_score(Y, predicted_Y)
+
+# Plot the original data and the regression line
+plt.scatter(X, Y, color='black', label='Original Data')
+plt.plot(X, predicted_Y, color='red', label='Regression Line')
+plt.title('Linear Regression for CHD Data')
+plt.xlabel('Age')
+plt.ylabel('Coronary Heart Disease (CHD)')
+plt.legend()
+plt.show()
+
+# Get the model parameters
+intercept = regression.intercept_[0]
+slope = regression.coef_[0][0]
+
+# Report the parameters of the model (w0 and w1)
+print(f"Intercept (w0): {intercept:.4f}")
+print(f"Slope (w1): {slope:.4f}")
+
+# Report the coefficient of determination (R²)
+print(f"Coefficient of Determination (R²): {r2:.4f}")
+
+# Predict the probability of someone 41 years old suffering from CHD
+age_41 = 41
+predicted_probability_41 = regression.predict([[age_41]])[0][0]
+print(f"Probability of someone aged 41 suffering from CHD: {predicted_probability_41:.4f}")
+
+
+
+
+
+
+MULTIPLE LINEAR REGRESSION MANUAL INPUT
+
+
+
+
+
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+
+# Create a DataFrame for the data
+data = pd.DataFrame({
+    'Diameter': [1, 2, 3, 1, 2, 3, 1, 2, 3],
+    'Slope': [0.001, 0.001, 0.001, 0.01, 0.01, 0.01, 0.05, 0.05, 0.05],
+    'Flow': [1.4, 8.3, 24.2, 4.7, 28.9, 84.0, 11.1, 69.0, 200.0]
+})
+
+# Create new columns for the logarithmic transformations
+data['log_Diameter'] = np.log(data['Diameter'])
+data['log_Slope'] = np.log(data['Slope'])
+data['log_Flow'] = np.log(data['Flow'])
+
+# Perform multiple linear regression
+X = data[['log_Diameter', 'log_Slope']]
+y = data['log_Flow']
+model = LinearRegression().fit(X, y)
+
+# Extract the coefficients (a0, a1, a2)
+a0 = np.exp(model.intercept_)
+a1 = model.coef_[0]
+a2 = model.coef_[1]
+
+# Print the coefficients
+print(f'a0 (constant): {a0:.4f}')
+print(f'a1 (coefficient for log(Diameter)): {a1:.4f}')
+print(f'a2 (coefficient for log(Slope)): {a2:.4f}')
+
+# Predict the flow for a pipe with Diameter = 2.5 ft and Slope = 0.025 ft/ft
+Diameter_pred = 2.5
+Slope_pred = 0.025
+log_Flow_pred = model.predict(np.array([[np.log(Diameter_pred), np.log(Slope_pred)]]))[0]
+Flow_pred = np.exp(log_Flow_pred)
+
+print(f'Predicted Flow for Diameter=2.5 ft and Slope=0.025 ft/ft: {Flow_pred:.2f} ft^3/s')
+
+
+
+
+
+SMALL CODE SLR:
+
+from scipy import stats
+x=[1,2,3,5,6,7]
+y=[3,5,6,7,6,8]
+slope,intercept,r,p,std_err=stats.linregress(x,y)
+mymodel=[slope*i + intercept for i in x]
+plt.scatter(x,y)
+plt.plot(x,mymodel)
+plt.show()
+
+
+
+
+
+MLR DATASET
+
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+
+# Load the dataset
+df = pd.read_csv('your_dataset.csv')
+
+# Assuming 'X' and 'y' are column names in your dataset
+X = df[['X']]
+y = df['y']
+
+# Create a linear regression model
+model = LinearRegression()
+
+# Train the model
+model.fit(X, y)
+
+# Make predictions on new data points
+X_new = np.array([[min(X.values)], [max(X.values)]])  # Assuming X is a numeric column
+y_pred = model.predict(X_new)
+
+# Plot the data and the linear regression line
+plt.scatter(X, y, alpha=0.5, label='Data')
+plt.plot(X_new, y_pred, 'r-', label='Linear Regression')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.legend()
+plt.show()

@@ -1,0 +1,209 @@
+WITH DATASET
+
+
+
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+data=pd.read_csv("data4_19.csv")
+attributes=data.iloc[:,:4].values
+labels=data.iloc[:,4].values
+dtree=DecisionTreeClassifier()
+dtree.fit(attributes,labels)
+features=['sepal-length','sepal-width','petal-length','petal-wdith']
+tree.plot_tree(dtree,feature_names=features)
+
+
+
+
+
+WITHOUT DATASET
+
+
+import math
+import pandas as pd
+
+def calculate_entropy(labels):
+    class_counts = {}
+    for label in labels:
+        if label not in class_counts:
+            class_counts[label] = 1
+        else:
+            class_counts[label] += 1
+
+    entropy = 0
+    total_samples = len(labels)
+
+    for count in class_counts.values():
+        probability = count / total_samples
+        entropy -= probability * math.log2(probability)
+
+    return entropy
+
+def calculate_information_gain(data, feature, labels):
+    unique_values = set(data[feature])
+    entropy_before_split = calculate_entropy(labels)
+
+    entropy_after_split = 0
+    for value in unique_values:
+        subset_indices = data.index[data[feature] == value].tolist()
+        subset_labels = [labels[i] for i in subset_indices]
+        subset_weight = len(subset_labels) / len(labels)
+        entropy_after_split += subset_weight * calculate_entropy(subset_labels)
+
+    information_gain = entropy_before_split - entropy_after_split
+    return information_gain
+
+def find_best_split(data, features, labels):
+    best_feature = None
+    best_information_gain = -1
+
+    for feature in features:
+        information_gain = calculate_information_gain(data, feature, labels)
+
+        if information_gain > best_information_gain:
+            best_feature = feature
+            best_information_gain = information_gain
+
+    return best_feature
+
+def build_decision_tree(data):
+    target_col = 'play_golf'  # Assuming your target column is 'play_golf'
+    features = [col for col in data.columns if col != target_col]
+
+    # Base case: If all labels are the same, return that label
+    if len(set(data[target_col])) == 1:
+        return data[target_col].iloc[0]
+
+    # If no features left to split on, return the majority label
+    if len(features) == 0:
+        return data[target_col].value_counts().idxmax()
+
+    # Find the best feature to split on
+    best_feature = find_best_split(data, features, data[target_col])
+
+    # Split the data and labels based on the best feature
+    unique_values = set(data[best_feature].astype(str))
+    subsets_data = {value: {'features': {}, 'labels': []} for value in unique_values}
+
+    for value in unique_values:
+        subset_data = data[data[best_feature] == value]
+        subsets_data[value]['features'] = subset_data
+        subsets_data[value]['labels'] = subset_data[target_col].tolist()
+
+    # Recursively build the decision tree for each subset
+    decision_tree = {best_feature: {}}
+    for value, subset in subsets_data.items():
+        decision_tree[best_feature][value] = build_decision_tree(pd.DataFrame(subset['features']))
+
+    return decision_tree
+
+# Sample data (you can replace this with your dataset)
+data = {
+    'outlook': ['Rainy', 'Rainy', 'Overcast', 'Sunny', 'Sunny', 'Sunny',
+                'Overcast', 'Rainy', 'Rainy', 'Sunny','Rainy','Overcast','Overcast','Sunny'],
+    'temperature': ['Hot', 'Hot', 'Hot', 'Mild', 'Cool', 'Cool', 'Cool',
+                    'Mild', 'Cool', 'Mild', 'Mild','Mild','Hot','Mild'],
+    'humidity': ['High', 'High', 'High', 'High', 'Normal', 'Normal',
+                 'Normal', 'High', 'Normal', 'Normal', 'Normal', 'High','Normal', 'High'],
+    'windy': ['False', 'True', 'False', 'False', 'False', 'True', 'True',
+              'False', 'False', 'False', 'True', 'True', 'False', 'True'],
+    'play_golf': ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No',
+                  'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']
+}
+
+# Create a DataFrame from the data
+df = pd.DataFrame(data)
+tree = build_decision_tree(df)
+print(tree)
+
+
+
+
+
+
+
+THARUN CODE WITH DATASET
+
+
+
+
+
+
+# Import the necessary libraries
+import warnings
+warnings.filterwarnings("ignore")
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import export_graphviz
+from graphviz import Source
+
+# Load the dataset
+data = pd.read_csv("data4_19.csv")
+X = data.iloc[:,:-1]
+y = data.iloc[:,-1]
+new=[5.2,3.1,1.4,0.2]
+# DecisionTreeClassifier
+tree_clf = DecisionTreeClassifier(criterion='entropy',max_depth=2)
+tree_clf.fit(X, y)
+
+# Plot the decision tree graph
+export_graphviz(
+	tree_clf,
+	out_file="iris_tree.dot",
+	feature_names=['Sepal-length','Sepal-width','Petal-length','Petal-width'],
+	class_names=tree_clf.classes_,
+	rounded=True,
+	filled=True
+)
+
+with open("iris_tree.dot") as f:
+	dot_graph = f.read()
+
+
+predicted=tree_clf.predict([new])
+print(f"predicted class:{predicted}")
+Source(dot_graph)
+
+
+
+
+
+SOWMIYA CODE:
+
+import numpy as np
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import export_graphviz
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+import graphviz
+
+def importdata(path = './DT.csv'):
+    data = pd.read_csv(path, header = 0, skiprows = 0)
+    print ("Dataset Length: ", len(data))
+    print ("Dataset Shape: ", data. shape)
+    #data.target = data['play']
+    return data
+playtennis_data = importdata()
+
+#creating a Label encoder to convert text to numbers
+Le = LabelEncoder()
+playtennis_data['Outlook'] = Le.fit_transform(playtennis_data['Outlook'])
+playtennis_data['Temp'] = Le.fit_transform(playtennis_data['Temp']) 
+playtennis_data['Humidity'] = Le.fit_transform(playtennis_data['Humidity'])  
+playtennis_data['Windy'] = Le.fit_transform(playtennis_data['Windy']) 
+playtennis_data['PlayTennis'] = Le.fit_transform(playtennis_data['PlayTennis']) 
+X = playtennis_data[['Outlook', 'Temp', 'Humidity', 'Windy']]
+y = playtennis_data['PlayTennis']
+X = playtennis_data[['Outlook', 'Temp', 'Humidity', 'Windy']]
+y = playtennis_data['PlayTennis']
+# create the classifier and train it
+tree = DecisionTreeClassifier(criterion='entropy', random_state=0) 
+tree.fit(X,y)
+dot_data = export_graphviz(tree, out_file=None)
+graph = graphviz.Source(dot_data) 
+graph.render("iris")
+dot_data = export_graphviz(tree, out_file=None, feature_names=
+['Outlook', 'Temp', 'Windy', 'Humidity'], class_names= ['No', 'Yes'], filled=True, rounded=True, special_characters=True)
+graph = graphviz.Source (dot_data)
+graph

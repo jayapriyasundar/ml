@@ -1,0 +1,310 @@
+KNN THARUN
+
+
+
+import numpy as np
+import pandas as pd
+import warnings
+warnings.filterwarnings('ignore')
+from sklearn.preprocessing import StandardScaler #for sub (iv)
+from sklearn.preprocessing import MinMaxScaler
+
+# Min-Max Standardization
+def min_max_scaling(dataset, feature):
+    min_val = dataset[feature].min()
+    max_val = dataset[feature].max()
+    return (dataset[feature] - min_val) / (max_val - min_val)
+
+def minmax(dataset):
+  dataset['Age'] = min_max_scaling(dataset, 'Age')
+  dataset['Income'] = min_max_scaling(dataset, 'Income')
+
+  new_record=dataset.iloc[-1,:]
+  dataset=dataset.iloc[:-1,:]#removing row 10
+
+  #caculating distances
+  dataset['Distance'] = np.sqrt((dataset['Age'] - new_record['Age'])**2 + (dataset['Income'] - new_record['Income'])**2)
+
+  # Sort the data by distance and select the top k=9 neighbors
+  k = 9
+  nearest_neighbors = dataset.sort_values(by='Distance')[:k]
+
+  # Count the class occurrences among the nearest neighbors
+  class_counts = nearest_neighbors['Risk'].value_counts()
+
+  class_counts
+
+  # Classify the new record using unweighted voting
+  predicted_risk_factor = class_counts.idxmax()
+
+  print(f"The predicted Risk Factor for the new record is: {predicted_risk_factor}")
+  print(dataset)
+
+
+def stand(data):
+  # Min-Max Standardization
+  mm = StandardScaler()
+
+  data.iloc[:,[1,3]] = mm.fit_transform(data.iloc[:,[1,3]])
+
+  new_record = data.iloc[-1,:]
+  data = data.iloc[:-1,:]
+
+  # New Record (Record #10) - You can replace these values with your own data
+
+  # Calculate distances
+  data['Distance'] = abs(data['Age'] - new_record['Age']) + abs(data['Income'] - new_record['Income']) #Manhattan Distance
+
+  # Sort the data by distance and select the top k=9 neighbors
+  k = 9
+  nearest_neighbors = data.sort_values(by='Distance')[:k]
+
+  # Count the class occurrences among the nearest neighbors
+  class_counts = nearest_neighbors['Risk'].value_counts()
+
+  # Classify the new record using unweighted voting
+  predicted_risk_factor = class_counts.idxmax()
+
+  print(f"The predicted Risk Factor for the new record is: {predicted_risk_factor}")
+  print(data)
+
+
+file = pd.read_csv("Data.csv")
+file['Income'] = file['Income'].str.replace('[\$,]', '', regex=True).astype(float)
+minmax(file)
+print('\n\n')
+stand(file)
+
+
+
+
+
+KNN THARUN2
+
+
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler #for sub (iv)
+from sklearn.preprocessing import MinMaxScaler
+
+# Min-Max Standardization
+def min_max_scaling(dataset, feature):
+    min_val = dataset[feature].min()
+    max_val = dataset[feature].max()
+    return (dataset[feature] - min_val) / (max_val - min_val)
+
+
+
+#caculating distances
+def euclid(dataset):
+  new_record=dataset.iloc[-1,:]
+  dataset=dataset.iloc[:-1,:]#removing last row
+  dataset['Distance'] = np.sqrt((dataset['Sepal-length'] - new_record['Sepal-length'])**2 + (dataset['Sepal-width'] - new_record['Sepal-width'])**2 +
+                                (dataset['Petal-length'] - new_record['Petal-length'])**2 + (dataset['Petal-width'] - new_record['Petal-width'])**2)
+
+  # Sort the data by distance and select the top k=9 neighbors
+  k = 12
+  nearest_neighbors = dataset.sort_values(by='Distance')[:k]
+
+  # Count the class occurrences among the nearest neighbors
+  class_counts = nearest_neighbors['Ground-truth'].value_counts()
+
+  # Classify the new record using unweighted voting
+  predicted = class_counts.idxmax()
+
+  print(f"The predicted class for the new record is: {predicted}")
+  print(dataset['Distance'])
+
+def manhat(dataset):
+  new_record=dataset.iloc[-1,:]
+  dataset=dataset.iloc[:-1,:]#removing last row
+  dataset['Distance'] = (abs(dataset['Sepal-length'] - new_record['Sepal-length']) + abs(dataset['Sepal-width'] - new_record['Sepal-width']) +
+                                abs(dataset['Petal-length'] - new_record['Petal-length']) + abs(dataset['Petal-width'] - new_record['Petal-width']))
+
+  # Sort the data by distance and select the top k=9 neighbors
+  k = 12
+  nearest_neighbors = dataset.sort_values(by='Distance')[:k]
+
+  # Count the class occurrences among the nearest neighbors
+  class_counts = nearest_neighbors['Ground-truth'].value_counts()
+
+  # Classify the new record using unweighted voting
+  predicted = class_counts.idxmax()
+
+  print(f"The predicted class for the new record is: {predicted}")
+  print(dataset['Distance'])
+
+
+dataset = pd.read_csv("data4_19.csv")
+
+dataset['Sepal-length'] = min_max_scaling(dataset, 'Sepal-length')
+dataset['Sepal-width'] = min_max_scaling(dataset, 'Sepal-width')
+dataset['Petal-length'] = min_max_scaling(dataset, 'Petal-length')
+dataset['Petal-width'] = min_max_scaling(dataset, 'Petal-width')
+
+euclid(dataset)
+print('\n\n\n')
+manhat(dataset)
+
+
+
+
+
+
+
+KNN RITHIP
+
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+
+irisData=load_iris()
+X=irisData.data
+y=irisData.target
+
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
+from sklearn.metrics import confusion_matrix
+knn=KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train,y_train)
+y_pred=knn.predict(X_test)
+print(confusion_matrix(y_test,y_pred))
+print("Accuracy: ",knn.score(X_test,y_test)*100)
+
+
+
+
+
+
+KNN GIT
+
+
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.neighbors import KNeighborsClassifier
+
+# Load the dataset
+data = pd.read_csv('Data.csv')
+
+# Remove '$' and commas and convert 'Income' to a float
+data['Income'] = data['Income'].str.replace('$', '').str.replace(',', '').astype(float)
+
+# Extract the 'Age' and 'Income' attributes
+X = data[['Age', 'Income']].values
+y = data['Risk'].values  # Assuming 'Risk' is the correct column name
+
+# Create a Min-Max scaler
+scaler = MinMaxScaler()
+
+# Fit and transform the data using Min-Max scaling
+X_scaled = scaler.fit_transform(X)
+
+# Calculate the distance for the new record (#10)
+new_record = np.array([[66, 36120.34]])  # Replace with the values of the new record
+new_record_scaled = scaler.transform(new_record)
+
+# Initialize the k-NN classifier with k=9
+k = 9
+knn = KNeighborsClassifier(n_neighbors=k)
+
+# Fit the k-NN classifier to the scaled data
+knn.fit(X_scaled, y)
+
+# Print the Min-Max standardized values for Age and Income
+print("Min-Max Standardized Values for Age and Income:")
+print(X_scaled)
+
+# Calculate the distances from the new record to the nine stored records
+distances = knn.kneighbors(new_record_scaled, return_distance=True)
+
+# Print the distances
+print("\nDistances from New Record (#10) to Nine Records:")
+print(distances)
+
+# Get the indices of the nine nearest neighbors
+indices_of_neighbors = distances[1][0]
+
+# Print the indices of the nine nearest neighbors
+print("\nIndices of the Nine Nearest Neighbors:")
+print(indices_of_neighbors)
+
+# Get the risk factors of the nine nearest neighbors
+neighbors_risk_factors = y[indices_of_neighbors]
+
+# Print the risk factors of the nine nearest neighbors
+print("\nRisk Factors of the Nine Nearest Neighbors:")
+print(neighbors_risk_factors)
+
+# Predict the risk factor for the new record using unweighted voting
+predicted_risk_factor = knn.predict(new_record_scaled)
+
+# Print the predicted risk factor for the new record
+print("\nPredicted Risk Factor for new record (#10):", predicted_risk_factor[0])
+
+
+
+
+KNN GIT2
+
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+# Load the dataset
+data = pd.read_csv("data4_19.csv")
+
+
+# Split the data into features and labels
+X = data.iloc[:, 0:4]
+y = data.iloc[:, 4]
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define a function to find the best K-value and accuracy for a given distance metric
+def find_best_k_value(distance_metric):
+    best_k = None
+    best_accuracy = 0
+
+    for k in range(1, 21):  # You can adjust the range as needed
+        knn = KNeighborsClassifier(n_neighbors=k, metric=distance_metric)
+        knn.fit(X_train, y_train)
+        y_pred = knn.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_k = k
+
+    return best_k, best_accuracy
+
+# Define the distance metrics to be considered
+distance_metrics = ['euclidean', 'manhattan', 'chebyshev']
+
+# Find the best K-value and accuracy for each distance metric
+best_k_values = {}
+for metric in distance_metrics:
+    best_k, best_accuracy = find_best_k_value(metric)
+    best_k_values[metric] = (best_k, best_accuracy)
+
+# Tabulate the results
+print("Distance Metric | Best K-Value | Accuracy")
+for metric in distance_metrics:
+    best_k, best_accuracy = best_k_values[metric]
+    print(f"{metric:15} | {best_k:12} | {best_accuracy:.4f}")
+
+# Choose the distance metric with the highest accuracy and use that for prediction
+best_metric = max(best_k_values, key=lambda metric: best_k_values[metric][1])
+best_k, _ = best_k_values[best_metric]
+
+# Predict the species of the new flower
+new_flower = [[5.2, 3.1, 1.4, 0.2]]
+knn = KNeighborsClassifier(n_neighbors=best_k, metric=best_metric)
+knn.fit(X, y)
+predicted_species = knn.predict(new_flower)
+
+print(f"Predicted Species: {predicted_species[0]}")

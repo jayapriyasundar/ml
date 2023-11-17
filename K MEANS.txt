@@ -1,0 +1,122 @@
+K MEANS WITHOUT DATASET
+
+
+
+import numpy as np
+
+def distance(point1, point2):
+  return np.sqrt(np.sum((point1 - point2) ** 2))
+
+def kmeans(data=[],centroid={},epochs=1):
+  cluster={}
+  for epoch in range(epochs):
+    cluster={cent:[] for cent in centroid}
+    for dp in data:
+      dp = np.array(dp)
+      assigned = None
+      min_dist=float('inf')
+      for clust,cent in centroid.items():
+        cent = np.array(cent)
+        dist = distance(cent,dp)
+        #print(clust,dist)
+        if dist<min_dist:
+          min_dist = dist
+          assigned = clust
+      cluster[assigned].append(dp.tolist())
+    for name, clust in cluster.items():
+      if clust!=[]:
+        centroid[name] = np.mean(clust,axis=0).tolist()
+    print(f'Cluster = {cluster}')
+    print(f'Centroid = {centroid}')
+
+data = [[0.34, -0.2, 1.13, 4.3], [5.1, -12.6, -7.0, 1.9], [-15.7, 0.06, -7.1, 11.2]]
+centroid = {"centroid1": [1.1, 0.2, -3.1, -0.4], "centroid2": [9.3, 6.1, -4.7,0.18]}
+kmeans(data=data,centroid=centroid,epochs=3)
+
+
+
+
+K MEANS WITH DATASET
+
+JACCARD DISTANCE
+
+
+import pandas as pd
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.metrics import jaccard_score
+
+data = pd.read_csv('data4_19.csv')
+
+X = data.iloc[:, :4].values
+
+kmeans = KMeans(n_clusters=3, init='random', n_init=1, random_state=41,max_iter=10)
+
+kmeans.fit(X)
+
+cluster_labels = kmeans.labels_
+cluster_centers = kmeans.cluster_centers_
+
+ground_truth_labels = data.iloc[:, -1].values
+
+print("Final Cluster Centers:")
+for i, center in enumerate(cluster_centers):
+    print(f"Cluster {i + 1}: {center}")
+
+jaccard_distances = []
+for i in range(3):
+    ground_truth_cluster = np.where(ground_truth_labels == f'Iris {i + 1}')[0]
+    predicted_cluster = np.where(cluster_labels == i)[0]
+
+    intersection = len(set(ground_truth_cluster).intersection(predicted_cluster))
+    union = len(set(ground_truth_cluster).union(predicted_cluster))
+    jaccard_distance =  (intersection / union)
+
+    jaccard_distances.append(jaccard_distance)
+
+print("\nJaccard Distances:")
+for i, distance in enumerate(jaccard_distances):
+    print(f"Cluster {i + 1}: {distance:.4f}")
+
+
+
+
+
+SPOT
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from itertools import cycle, islice
+from pandas.plotting import parallel_coordinates
+data = pd.read_csv('housing.csv')
+features = ['median_income']
+select_df = data[features]
+select_df.columns
+X = StandardScaler().fit_transform(select_df)
+X[:5]
+kmeans = KMeans(n_clusters=5)
+model = kmeans.fit(X)
+model
+centers = model.cluster_centers_
+centers[:5]
+centers.shape
+def pd_centers(featuresUsed, centers):
+	colNames = list(featuresUsed)
+	colNames.append('prediction')
+
+	Z = [np.append(A, index) for index, A in enumerate(centers)]
+
+	P = pd.DataFrame(Z, columns=colNames)
+	P['prediction'] = P['prediction'].astype(int)
+	return P
+
+P = pd_centers(features, centers)
+P
+
